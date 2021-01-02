@@ -134,7 +134,10 @@ def make_pylons_stack(conf, full_stack=True, static_files=True,
     )
 
     # Establish the Registry for this application
-    app = RegistryManager(app, streaming=False)
+    # The RegistryManager includes code to pop
+    # registry values after the stream has completed,
+    # so we need to prevent this with `streaming` set to True.
+    app = RegistryManager(app, streaming=True)
 
     if asbool(static_files):
         # Serve static files
@@ -171,8 +174,6 @@ def make_pylons_stack(conf, full_stack=True, static_files=True,
                 )
         app = Cascade(extra_static_parsers + static_parsers)
 
-    # Prevent the host from request to be added to the new header location.
-    app = common_middleware.HostHeaderMiddleware(app)
     # Tracking
     if asbool(config.get('ckan.tracking_enabled', 'false')):
         app = common_middleware.TrackingMiddleware(app, config)

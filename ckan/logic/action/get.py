@@ -821,16 +821,11 @@ def tag_list(context, data_dict):
 def user_list(context, data_dict):
     '''Return a list of the site's user accounts.
 
-    :param q: filter the users returned to those whose names contain a string
+    :param q: restrict the users returned to those whose names contain a string
       (optional)
     :type q: string
-    :param email: filter the users returned to those whose email match a
-      string (optional) (you must be a sysadmin to use this filter)
-    :type email: string
     :param order_by: which field to sort the list by (optional, default:
-      ``'display_name'``). Users can be sorted by ``'id'``, ``'name'``,
-      ``'fullname'``, ``'display_name'``, ``'created'``, ``'about'``,
-      ``'sysadmin'`` or ``'number_created_packages'``.
+      ``'name'``). Can be any user field or ``edits`` (i.e. number_of_edits).
     :type order_by: string
     :param all_fields: return full user dictionaries instead of just names.
       (optional, default: ``True``)
@@ -847,8 +842,7 @@ def user_list(context, data_dict):
     _check_access('user_list', context, data_dict)
 
     q = data_dict.get('q', '')
-    email = data_dict.get('email')
-    order_by = data_dict.get('order_by', 'display_name')
+    order_by = data_dict.get('order_by', 'name')
     all_fields = asbool(data_dict.get('all_fields', True))
 
     if all_fields:
@@ -875,34 +869,18 @@ def user_list(context, data_dict):
 
     if q:
         query = model.User.search(q, query, user_name=context.get('user'))
-    if email:
-        query = query.filter_by(email=email)
 
-    order_by_field = None
     if order_by == 'edits':
-        raise ValidationError('order_by=edits is no longer supported')
-    elif order_by == 'number_created_packages':
-        order_by_field = order_by
-    elif order_by != 'display_name':
-        try:
-            order_by_field = getattr(model.User, order_by)
-        except AttributeError:
-            pass
-    if order_by == 'display_name' or order_by_field is None:
-        query = query.order_by(
-            _case(
-                [(
-                    _or_(
-                        model.User.fullname == None,
-                        model.User.fullname == ''
-                    ),
-                    model.User.name
-                )],
-                else_=model.User.fullname
-            )
-        )
+        query = query.order_by(_desc(
+            _select([_func.count(model.Revision.id)],
+                    model.Revision.author == model.User.name)))
     else:
-        query = query.order_by(order_by_field)
+        query = query.order_by(
+            _case([(
+                _or_(model.User.fullname == None,
+                     model.User.fullname == ''),
+                model.User.name)],
+                else_=model.User.fullname))
 
     # Filter deleted users
     query = query.filter(model.User.state != model.State.DELETED)
@@ -1448,15 +1426,14 @@ def user_show(context, data_dict):
     if id:
         user_obj = model.User.get(id)
         context['user_obj'] = user_obj
+        if user_obj is None:
+            raise NotFound
     elif provided_user:
         context['user_obj'] = user_obj = provided_user
     else:
         raise NotFound
 
     _check_access('user_show', context, data_dict)
-
-    if not bool(user_obj):
-        raise NotFound
 
     # include private and draft datasets?
     requester = context.get('user')
@@ -2692,7 +2669,7 @@ def user_activity_list_html(context, data_dict):
     :rtype: string
 
     '''
-    activity_stream = logic.get_action('user_activity_list')(context, data_dict)
+    activity_stream = user_activity_list(context, data_dict)
     offset = int(data_dict.get('offset', 0))
     extra_vars = {
         'controller': 'user',
@@ -2778,7 +2755,7 @@ def organization_activity_list_html(context, data_dict):
     :rtype: string
 
     '''
-    activity_stream = logic.get_action('organization_activity_list')(context, data_dict)
+    activity_stream = organization_activity_list(context, data_dict)
     offset = int(data_dict.get('offset', 0))
     extra_vars = {
         'controller': 'organization',

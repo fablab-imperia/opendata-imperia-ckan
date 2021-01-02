@@ -1,5 +1,5 @@
 /*globals describe beforeEach afterEach it assert sinon ckan jQuery */
-describe.skip('ckan.modules.ImageUploadModule()', function () {
+describe('ckan.modules.ImageUploadModule()', function () {
   var ImageUploadModule = ckan.module.registry['image-upload'];
 
   beforeEach(function () {

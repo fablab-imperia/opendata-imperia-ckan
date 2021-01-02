@@ -1,7 +1,6 @@
 # encoding: utf-8
 
 from ckan.tests.legacy import TestController, CreateTestData, url_for
-from ckan.tests import helpers
 import ckan.model as model
 
 # TODO: purge revisions after creating them
@@ -12,12 +11,12 @@ class TestRevisionController(TestController):
         model.Session.remove()
         # rebuild db before this test as it depends delicately on what
         # revisions exist
-        helpers.reset_db()
+        model.repo.init_db()
         CreateTestData.create()
 
     @classmethod
     def teardown_class(self):
-        helpers.reset_db()
+        model.repo.rebuild_db()
 
     def create_40_revisions(self):
         for i in range(0,40):
@@ -92,7 +91,7 @@ class TestRevisionController(TestController):
         anna = model.Package.by_name(u'annakarenina')
         rev_id = anna.revision.id
         offset = url_for(controller='revision', action='read', id='%s' % rev_id)
-        res = self.app.get(offset, extra_environ={'REMOTE_USER': 'testsysadmin'})
+        res = self.app.get(offset)
         assert 'Revision %s' % rev_id in res
         assert 'Revision: %s' % rev_id in res
         # Todo: Reinstate asserts below, failing on 'Test Revision Deleting'

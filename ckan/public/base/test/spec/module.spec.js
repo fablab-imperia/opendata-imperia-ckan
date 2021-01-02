@@ -38,7 +38,7 @@ describe('ckan.module(id, properties|callback)', function () {
     assert.equal(ckan.module('name', this.factory), ckan);
   });
 
-  describe.skip('.initialize()', function () {
+  describe('.initialize()', function () {
     beforeEach(function () {
       this.element1 = jQuery('<div data-module="test1">').appendTo(this.fixture);
       this.element2 = jQuery('<div data-module="test1">').appendTo(this.fixture);
@@ -323,7 +323,7 @@ describe('ckan.module(id, properties|callback)', function () {
     });
 
     describe('.$(selector)', function () {
-      it.skip('should find children within the module element', function () {
+      it('should find children within the module element', function () {
         this.module.el.append(jQuery('<input /><input />'));
         assert.equal(this.module.$('input').length, 2);
       });
@@ -407,7 +407,7 @@ describe('ckan.module(id, properties|callback)', function () {
         assert.called(target);
       });
 
-      it.skip('should remove the element from the page', function () {
+      it('should remove the element from the page', function () {
         this.fixture.append(this.module.el);
         this.module.remove();
 

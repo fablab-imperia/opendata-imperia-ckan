@@ -64,12 +64,11 @@ ckan.module('text_view', function (jQuery) {
           self.el[0].innerHTML = highlighted;
         },
         error: function(jqXHR, textStatus, errorThrown) {
-          if (textStatus == 'error' && jqXHR.responseText) {
+          if (textStatus == 'error' && jqXHR.responseText.length) {
             self.el.html(jqXHR.responseText);
           } else {
-            self.el.html(self._(
-              'An error occured during AJAX request. Could not load view.')
-            );
+            self.el.html(self_('An error occurred: %(text)s %(error)s',
+                               {text: textStatus, error: errorThrown}));
           }
         }
       });

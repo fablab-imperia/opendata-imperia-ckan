@@ -1,4 +1,4 @@
-describe.skip('jQuery.incompleteFormWarning()', function () {
+describe('jQuery.incompleteFormWarning()', function () {
   beforeEach(function () {
     this.el = jQuery('<form />').appendTo(this.fixture);
     this.el.on('submit', false);

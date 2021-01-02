@@ -75,8 +75,7 @@ class ValidationError(ActionError):
                     tag_errors.append(', '.join(error['name']))
                 except KeyError:
                     # e.g. if it is a vocabulary_id error
-                    if error:
-                        tag_errors.append(error)
+                    tag_errors.append(error)
             error_dict['tags'] = tag_errors
         self.error_dict = error_dict
         self._error_summary = error_summary
@@ -431,13 +430,11 @@ def get_action(action):
                 auth_function.auth_audit_exempt = True
                 fetched_actions[name] = auth_function
     for name, func_list in chained_actions.iteritems():
-        if name not in fetched_actions and name not in _actions:
-            # nothing to override from plugins or core
+        if name not in fetched_actions:
             raise NotFound('The action %r is not found for chained action' % (
                 name))
         for func in reversed(func_list):
-            # try other plugins first, fall back to core
-            prev_func = fetched_actions.get(name, _actions.get(name))
+            prev_func = fetched_actions[name]
             fetched_actions[name] = functools.partial(func, prev_func)
 
     # Use the updated ones in preference to the originals.
