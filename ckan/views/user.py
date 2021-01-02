@@ -360,9 +360,7 @@ class RegisterView(MethodView):
 def login():
     # Do any plugin login stuff
     for item in plugins.PluginImplementations(plugins.IAuthenticator):
-        response = item.login()
-        if response:
-            return response
+        item.login()
 
     extra_vars = {}
     if g.user:
@@ -393,10 +391,7 @@ def logged_in():
 def logout():
     # Do any plugin logout stuff
     for item in plugins.PluginImplementations(plugins.IAuthenticator):
-        response = item.logout()
-        if response:
-            return response
-
+        item.logout()
     url = h.url_for(u'user.logged_out_page')
     return h.redirect_to(
         _get_repoze_handler(u'logout_handler_path') + u'?came_from=' + url,
