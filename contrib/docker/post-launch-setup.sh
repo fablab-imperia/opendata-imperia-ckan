@@ -1,7 +1,10 @@
 #!/bin/bash
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 9b54de60294b273500496b453f5349f88a03bf6a
 #db setup
 docker exec ckan /usr/local/bin/ckan -c /etc/ckan/production.ini datastore set-permissions | docker exec -i db psql -U ckan
 
